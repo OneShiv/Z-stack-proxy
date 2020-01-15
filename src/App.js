@@ -1,26 +1,25 @@
 import React from 'react';
-import logo from './logo.svg';
 import './App.css';
+import SearchBar from './components/SearchBar';
+import SearchResults from './components/SearchResults';
+import { connect } from 'react-redux';
+import { seachQuestionString } from './actions';
 
-function App() {
+function App(props) {
+  console.log(props);
   return (
     <div className="App">
       <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
+        <h1>Stackoverflow proxy</h1>
       </header>
+      <SearchBar onSearch={props.seachQuestionString} />
+      {props.searchResults.map(result => <SearchResults {...result} />)}
     </div>
   );
 }
 
-export default App;
+const mapStateToProps = state => state;
+const mapDispatchToProps = {
+  seachQuestionString
+};
+export default connect(mapStateToProps, mapDispatchToProps)(App);
