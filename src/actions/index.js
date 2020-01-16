@@ -1,7 +1,7 @@
 import { SEARCH_TEXT } from '../constants'
-export const seachQuestionString = (str) => {
+export const seachQuestionString = (payload) => {
     return {
         type: SEARCH_TEXT,
-        payload: str
+        payload: payload
     }
 }
