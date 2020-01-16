@@ -1,21 +1,29 @@
 import React from 'react';
 import './SearchResult.scss';
+import ReactHtmlParser from 'react-html-parser';
+import Typography from '@material-ui/core/Typography';
+import Chip from '@material-ui/core/Chip';
 
 const Searchresult = (props) => {
     return (
         <div className="searchResultRow">
-            <div class="ques__title">{props.title}</div>
-            <div class="ques_owner_info">
-                <div class="ques_owener_avatar">
-                    <img style={{
-                        height: 50,
-                        width: 50
-                    }}
-                        src={props.owner.profile_image} />
-                    <p>{props.owner.display_name}</p>
+            <Typography variant="h6" gutterBottom>
+                {props.title}
+            </Typography>
+            <Typography variant="subtitle" gutterBottom className="ques_body">
+                {ReactHtmlParser(props.body.substring(0,100))}
+            </Typography>
+            <div className="ques_desc_avatar">
+                <div className="ques_owner_info">
+                    <div className="ques_owener_avatar">
+                        <img src={props.owner.profile_image} />
+                        <p style={{marginLeft:10}}>{props.owner.display_name}</p>
+                    </div>
+                </div>
+                <div className='tags-container'>
+                    {props.tags.map(tag => <Chip label={tag} />)}
                 </div>
             </div>
-
         </div>
     )
 }

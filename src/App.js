@@ -7,6 +7,8 @@ import { connect } from 'react-redux';
 import { seachQuestionString } from './actions';
 import { getTopTags } from './apis';
 
+
+
 function App(props) {
   console.log(props)
   const [value, setValue] = useState({
@@ -53,13 +55,28 @@ function App(props) {
   const searchHandler = (e) => {
     e.preventDefault();
     if (value.searchString) {
-      props.seachQuestionString({
-        query_string: value.searchString,
-        tag: value.selectedTag,
-        score: value.score,
-        unanswered: value.unanswered,
-        accepted: value.accepted
-      });
+      debugger;
+      let cache_res = props.cachedSearchResults;
+      let cachedResult = cache_res.reduce((acc,cac) => {
+        if(cac.string === value.searchString){
+          return cac.results;
+        }
+      },null);
+
+      if(cachedResult){
+        props.seachQuestionString({
+          string: value.searchString,
+          results: cachedResult
+        });
+      }else{
+        props.seachQuestionString({
+          string: value.searchString,
+          tag: value.selectedTag,
+          score: value.score,
+          unanswered: value.unanswered,
+          accepted: value.accepted
+        });
+      }
     } else {
       setValue({
         ...value,
@@ -75,12 +92,8 @@ function App(props) {
       <div className="searchbar-wrapper">
         <SearchBar error={value.error} searchHandler={searchHandler} str={value.searchString} handleChange={handleChange} />
         <FilterSection value={value} handleChange={handleChange} />
-        <button style={{
-          width: 50,
-          height: 30
-        }} onClick={searchHandler}>Search</button>
       </div>
-      {props.searchResults.map(result => <SearchResults {...result} />)}
+      {props.searchResults.map((result,index) => <SearchResults {...result} key={index}/>)}
     </div>
   );
 }

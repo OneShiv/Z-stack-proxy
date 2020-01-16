@@ -1,6 +1,6 @@
 export const searchQuestion = (payload) => {
-    const { query_string, tag, score, unanswered, accepted } = payload;
-    const request = fetch(`https://api.stackexchange.com/2.2/search/advanced?order=desc&sort=activity&q=${query_string}&tagged=${tag}&score=${score && 3}&site=stackoverflow&accepted=${accepted}&unanswered=${unanswered}`);
+    const { string, tag, score, unanswered, accepted } = payload;
+    const request = fetch(`https://api.stackexchange.com/2.2/search/advanced?order=desc&sort=activity&q=${string}&tagged=${tag}&score=${score && 3}&site=stackoverflow&accepted=${accepted}&unanswered=${unanswered}&filter=withbody`);
     return request.then(response => response.json())
 }
 
