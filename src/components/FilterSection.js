@@ -1,8 +1,7 @@
 import React from 'react';
 import { FormControl, FormLabel, FormControlLabel, RadioGroup, Checkbox, Radio, FormGroup } from '@material-ui/core';
-
+import Loading from './Loading';
 const FilterSection = (props) => {
-    console.log(props);
     const { handleChange, value } = props;
     return (
         <div style={{
@@ -14,8 +13,9 @@ const FilterSection = (props) => {
             }}>
                 <FormControl component="fieldset" className="form-control">
                     <FormLabel component="legend">Tog Tags</FormLabel>
-                    <RadioGroup aria-label="Top Tags" name="top-tag" value={value.selectedTag} onChange={handleChange('selectedTag')}>
+                    <RadioGroup aria-label="Top Tags" name="top-tag" onChange={handleChange('selectedTag')}>
                         {value.tags.map(tag => (<FormControlLabel value={tag.name} control={<Radio />} label={tag.name} />))}
+                        {props.tagsLoading && <Loading />}
                     </RadioGroup>
                 </FormControl>
             </ul>

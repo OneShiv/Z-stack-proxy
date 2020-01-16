@@ -6,22 +6,21 @@ const initialState = {
         val: false,
         message: ''
     },
-    cachedSearchResults:[]
+    cachedSearchResults: []
 }
 
 const reducer = (state = initialState, action) => {
     switch (action.type) {
         case SEARCH_TEXT_SUCCESS:
-                debugger;
             let newCacheResult = state.cachedSearchResults;
-            if(state.cachedSearchResults.length ===5) {
-                newCacheResult = state.cachedSearchResults.splice(4,1,{
+            if (state.cachedSearchResults.length === 5) {
+                newCacheResult = state.cachedSearchResults.splice(4, 1, {
                     string: action.payload.string,
                     results: action.payload.results
                 });
-            }else{
+            } else {
                 let searchStringArr = state.cachedSearchResults.map(cac => cac.string);
-                if(searchStringArr.find( str => str ===action.payload.string)){
+                if (searchStringArr.find(str => str === action.payload.string)) {
                     return state;
                 }
                 newCacheResult = newCacheResult.concat({

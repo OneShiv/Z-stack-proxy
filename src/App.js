@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import './App.css';
 import SearchBar from './components/SearchBar';
 import SearchResults from './components/SearchResults';
@@ -6,11 +6,12 @@ import FilterSection from './components/FilterSection';
 import { connect } from 'react-redux';
 import { seachQuestionString } from './actions';
 import { getTopTags } from './apis';
-
+import Modal from './components/Modals';
+import ReactHtmlParser from 'react-html-parser';
 
 
 function App(props) {
-  console.log(props)
+  const [open, setOpen] = useToggle(false);
   const [value, setValue] = useState({
     searchString: '',
     tags: [],
@@ -18,19 +19,32 @@ function App(props) {
     selectedTag: null,
     score: false,
     unanswered: false,
-    accepted: false
+    accepted: false,
+    clickedPost: null,
+    tagsLoading: true,
+    resultsLoading: false
   });
   useEffect(() => {
+    setValue({
+      ...value,
+      tagsLoading: true
+    })
     getTopTags().then(data => {
       let reducedData = data.items.map(data => ({
         name: data.name
       }))
       setValue({
         ...value,
-        tags: reducedData
+        tags: reducedData,
+        tagsLoading: false
       });
     })
   }, []);
+  function useToggle(initialValue = false) {
+    const [toggle, setToggle] = useState(initialValue)
+
+    return [toggle, useCallback(() => setToggle(status => !status), [])]
+  }
   const handleChange = (key) => (e) => {
     if (key === 'selectedTag' || key === 'searchString') {
       if (e.target.value === '') {
@@ -39,36 +53,41 @@ function App(props) {
           error: 'Empty String not allowed'
         })
       }
-      setValue({
+      setValue(() => ({
         ...value,
         error: null,
         [key]: e.target.value
-      })
+      }));
+      if (key === 'selectedTag') {
+        searchHandler(e);
+      }
     } else {
       setValue({
         ...value,
         error: null,
         [key]: e.target.checked
-      })
+      });
+      searchHandler(e);
     }
   }
   const searchHandler = (e) => {
     e.preventDefault();
+
+    let complexString = `${value.searchString}${value.selectedTag}${value.score}${value.unanswered}${value.accepted}`;
     if (value.searchString) {
-      debugger;
       let cache_res = props.cachedSearchResults;
-      let cachedResult = cache_res.reduce((acc,cac) => {
-        if(cac.string === value.searchString){
+      let cachedResult = cache_res.reduce((acc, cac) => {
+        if (cac.string === complexString) {
           return cac.results;
         }
-      },null);
+      }, null);
 
-      if(cachedResult){
+      if (cachedResult) {
         props.seachQuestionString({
-          string: value.searchString,
+          string: complexString,
           results: cachedResult
         });
-      }else{
+      } else {
         props.seachQuestionString({
           string: value.searchString,
           tag: value.selectedTag,
@@ -84,6 +103,13 @@ function App(props) {
       })
     }
   }
+  const clickPostHandler = (post) => {
+    setValue({
+      ...value,
+      clickedPost: post
+    });
+    setOpen(true);
+  }
   return (
     <div className="App">
       <header className="App-header">
@@ -91,9 +117,19 @@ function App(props) {
       </header>
       <div className="searchbar-wrapper">
         <SearchBar error={value.error} searchHandler={searchHandler} str={value.searchString} handleChange={handleChange} />
-        <FilterSection value={value} handleChange={handleChange} />
+        <FilterSection tagsLoading={value.tagsLoading} value={value} handleChange={handleChange} />
       </div>
-      {props.searchResults.map((result,index) => <SearchResults {...result} key={index}/>)}
+      {props.searchResults.map((result, index) => <SearchResults resultsLoading={value.resultsLoading} clickPost={clickPostHandler} {...result} key={index} />)}
+      {open && (
+        <Modal open={open} toggle={setOpen}>
+          <h3>{value.clickedPost.title}</h3>
+          <p>{ReactHtmlParser(value.clickedPost.body)}</p>
+          <div className="author-details">
+            <p>Name:{value.clickedPost.owner.display_name}</p>
+            <p>Reputation:{value.clickedPost.owner.reputation}</p>
+          </div>
+        </Modal>
+      )}
     </div>
   );
 }
