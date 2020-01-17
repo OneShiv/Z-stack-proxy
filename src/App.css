@@ -41,3 +41,10 @@
   display: grid;
   grid-template-columns: 60% 40%;
 }
+
+@media (max-width: 480px) {
+  .searchbar-wrapper {
+      width: 100%;
+      display: block;
+  }
+}
