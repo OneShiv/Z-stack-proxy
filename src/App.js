@@ -12,8 +12,8 @@ import ReactHtmlParser from 'react-html-parser';
 
 function App(props) {
   const [open, setOpen] = useToggle(false);
+  const [searchString, setSearchString] = useState('');
   const [value, setValue] = useState({
-    searchString: '',
     tags: [],
     error: null,
     selectedTag: null,
@@ -38,14 +38,16 @@ function App(props) {
         tags: reducedData,
         tagsLoading: false
       });
-    })
-  }, []);
+    });
+    searchHandlerv2();
+  }, [value.selectedTag, value.unanswered, value.score, value.accepted]);
   function useToggle(initialValue = false) {
     const [toggle, setToggle] = useState(initialValue)
 
     return [toggle, useCallback(() => setToggle(status => !status), [])]
   }
   const handleChange = (key) => (e) => {
+    debugger;
     if (key === 'selectedTag' || key === 'searchString') {
       if (e.target.value === '') {
         setValue({
@@ -58,23 +60,24 @@ function App(props) {
         error: null,
         [key]: e.target.value
       }));
-      if (key === 'selectedTag') {
-        searchHandler(e);
-      }
+      // if (key === 'selectedTag') {
+      //   searchHandler(e);
+      // }
     } else {
-      setValue({
+      setValue(() =>({
         ...value,
         error: null,
         [key]: e.target.checked
-      });
-      searchHandler(e);
+      })
+      );
+      // searchHandler(e);
     }
   }
   const searchHandler = (e) => {
     e.preventDefault();
 
-    let complexString = `${value.searchString}${value.selectedTag}${value.score}${value.unanswered}${value.accepted}`;
-    if (value.searchString) {
+    let complexString = `${searchString}${value.selectedTag}${value.score}${value.unanswered}${value.accepted}`;
+    if (searchString) {
       let cache_res = props.cachedSearchResults;
       let cachedResult = cache_res.reduce((acc, cac) => {
         if (cac.string === complexString) {
@@ -89,7 +92,39 @@ function App(props) {
         });
       } else {
         props.seachQuestionString({
-          string: value.searchString,
+          string: searchString,
+          tag: value.selectedTag,
+          score: value.score,
+          unanswered: value.unanswered,
+          accepted: value.accepted
+        });
+      }
+    } else {
+      setValue({
+        ...value,
+        error: "Empty not allowed"
+      })
+    }
+  }
+
+  const searchHandlerv2 = () => {
+    let complexString = `${searchString}${value.selectedTag}${value.score}${value.unanswered}${value.accepted}`;
+    if (searchString) {
+      let cache_res = props.cachedSearchResults;
+      let cachedResult = cache_res.reduce((acc, cac) => {
+        if (cac.string === complexString) {
+          return cac.results;
+        }
+      }, null);
+
+      if (cachedResult) {
+        props.seachQuestionString({
+          string: complexString,
+          results: cachedResult
+        });
+      } else {
+        props.seachQuestionString({
+          string: searchString,
           tag: value.selectedTag,
           score: value.score,
           unanswered: value.unanswered,
@@ -116,7 +151,7 @@ function App(props) {
         <h1>Stackoverflow proxy</h1>
       </header>
       <div className="searchbar-wrapper">
-        <SearchBar error={value.error} searchHandler={searchHandler} str={value.searchString} handleChange={handleChange} />
+        <SearchBar error={value.error} searchHandler={searchHandler} str={searchString} setSearchString={setSearchString} />
         <FilterSection tagsLoading={value.tagsLoading} value={value} handleChange={handleChange} />
       </div>
       {props.searchResults.map((result, index) => <SearchResults resultsLoading={value.resultsLoading} clickPost={clickPostHandler} {...result} key={index} />)}

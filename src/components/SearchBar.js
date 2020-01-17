@@ -30,7 +30,7 @@ const SearchBar = (props) => {
                     InputLabelProps={{
                         shrink: true,
                     }}
-                    onChange={props.handleChange('searchString')}
+                    onChange={(e) => props.setSearchString(e.target.value)}
                 />
                 <Button variant="contained" color="secondary" onClick={props.searchHandler}>
                     Search
